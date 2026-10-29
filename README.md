@@ -12,6 +12,7 @@ The existing form design is retained in `index.html`. The submission handler now
    - `GOOGLE_SHEET_ID` = spreadsheet ID
    - `GOOGLE_SERVICE_ACCOUNT_JSON` = the entire service-account JSON as a single-line JSON value
    - `ALLOWED_ORIGIN` = the production origin of your Netlify site
+   - `ADMIN_ACCESS_KEY` = a strong organizer-only key used to sign in to the Admin Responses page
    Ensure the variables are available to Functions. Never put the service-account JSON in HTML, JavaScript, Git, or a public repository.
 6. Redeploy the site after setting the variables.
 
@@ -34,16 +35,15 @@ npx netlify deploy --build --prod
 
 Alternatively, push the project to the Git repository connected to the existing Netlify site and let Netlify deploy it. Check that the publish directory is the project root because `index.html` is there.
 
-## Verify
+## Response storage and admin access
 
-1. Open the public site and submit a test registration using clearly labelled test data.
-2. Confirm the form only shows success after the function confirms the Google Sheets write.
-3. Open the spreadsheet and verify the new row.
-4. If it fails, open Netlify → Functions → `submit-lead` logs and inspect the error. Do not paste private-key JSON into chat or logs.
+- Public form submissions are appended by `submit-lead` to the configured Google Sheet. The form shows success only after the Sheets API confirms the write.
+- `admin-auth` checks the organizer key on the server and returns a short-lived session token. The key is never embedded in the public page.
+- `admin-leads` uses that token to read, refresh, and delete responses in the same Google Sheet. The admin page refreshes from the sheet every 15 seconds, so submissions from other devices appear without using local browser storage.
+- The spreadsheet must stay private and be shared with the service account email as Editor.
+- Never use the admin key as the college phone number or another publicly known value. Do not paste service-account JSON or admin keys into chat, Git, or logs.
 
 ## Notes
 
 - The function creates column headers if the first worksheet is completely empty.
-- The spreadsheet must be shared with the service account email as Editor.
-- The existing admin portal still contains legacy Apps Script configuration controls for its old pull/sync dashboard. The public form submission path in this package no longer calls Apps Script. The old admin dashboard's cross-device read/delete/sync controls are not migrated by this change.
 - Add a CAPTCHA or rate-limiting layer before large-scale public use to reduce spam. Do not claim a registration was saved unless the server returns success.

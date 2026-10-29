@@ -545,9 +545,9 @@ y<!DOCTYPE html>
                         <button onclick="exportResponsesToCSV()" class="px-4 py-2 rounded-xl bg-white text-rdnavy border-2 border-rdgold font-bold text-xs sm:text-sm flex items-center gap-2 shadow hover:opacity-90 transition">
                             <i class="fa-solid fa-file-csv text-rdmaroon"></i> Export CSV / Excel
                         </button>
-                        <button onclick="toggleDriveSetupModal(true)" class="px-4 py-2 rounded-xl bg-white text-rdnavy border-2 border-rdgold font-bold text-xs sm:text-sm flex items-center gap-2 shadow hover:opacity-90 transition">
-                            <i class="fa-brands fa-google-drive text-rdmaroon"></i> Google Drive Excel Sync
-                        </button>
+                        <span class="px-4 py-2 rounded-xl bg-white text-rdnavy border-2 border-rdgold font-bold text-xs sm:text-sm flex items-center gap-2 shadow">
+                            <i class="fa-brands fa-google-drive text-rdmaroon"></i> Google Sheets Connected
+                        </span>
                         <button onclick="toggleManualImportModal(true)" class="px-4 py-2 rounded-xl bg-white text-rdnavy border-2 border-rdnavy font-bold text-xs sm:text-sm flex items-center gap-2 shadow hover:opacity-90 transition">
                             <i class="fa-solid fa-file-import text-rdmaroon"></i> Import Receipt / Backup
                         </button>
@@ -574,7 +574,7 @@ y<!DOCTYPE html>
                                 </span>
                             </div>
                             <p class="text-[11px] sm:text-xs text-rdnavy/75 mt-0.5">
-                                Your Google Sheet is pre-linked. Click <strong>"Open Drive Sheet"</strong> to view it. To enable auto-save of form submissions, deploy the Apps Script below and paste the Web App URL in Box 1.
+                                Form responses from any device are saved to Google Sheets automatically. Sign in to this admin portal to view the saved responses.
                             </p>
                         </div>
                     </div>
@@ -582,9 +582,6 @@ y<!DOCTYPE html>
                         <a id="openConnectedSheetBtn" href="https://docs.google.com/spreadsheets/" target="_blank" rel="noopener noreferrer" class="inline-flex px-3 py-1.5 rounded-lg bg-rdmaroon text-rdgold text-xs font-bold items-center gap-1.5 shadow hover:opacity-90 transition">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Drive Sheet
                         </a>
-                        <button type="button" onclick="toggleDriveSetupModal(true)" class="px-3.5 py-2 rounded-lg bg-rdnavy text-rdgold font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition">
-                            <i class="fa-solid fa-gear"></i> Configure Google Apps Script
-                        </button>
                     </div>
                 </div>
 
@@ -755,7 +752,7 @@ y<!DOCTYPE html>
                 </div>
                 <h3 class="font-serif font-extrabold text-xl text-rdnavy">Registration Submitted!</h3>
                 <p class="text-xs sm:text-sm text-rdnavy/80">
-                    Thank you for registering for the <strong>RDCCPS Consultancy Meet – Admission 2027-2028</strong>. Your details have been recorded for <span class="font-bold text-rdmaroon">rdccpscollege@gmail.com</span>.
+                    Your registration has been saved to Google Sheets. The organizers can view it in the Admin Responses page.
                 </p>
 
                 <div id="successSummaryBox" class="bg-white p-4 rounded-xl border border-rdnavy/20 text-left text-xs space-y-1 text-rdnavy"></div>
@@ -838,11 +835,8 @@ y<!DOCTYPE html>
                         <button type="button" onclick="copyGoogleSitesEmbedCode()" class="px-4 py-2.5 rounded-xl bg-rdgold text-rdnavy border border-rdnavy font-bold text-xs flex items-center gap-1.5 shadow hover:opacity-95 transition">
                             <i class="fa-solid fa-code"></i> Copy Updated Google Sites Embed Code
                         </button>
-                        <button type="button" onclick="testGoogleDriveSync()" class="px-4 py-2.5 rounded-xl bg-rdmaroon text-rdgold border border-rdgold font-bold text-xs flex items-center gap-1.5 shadow hover:opacity-95 transition">
-                            <i class="fa-solid fa-vial-circle-check"></i> Send Test Row to Sheet &amp; Portal
-                        </button>
-                        <button type="button" onclick="fetchFromGoogleSheet(false)" class="px-4 py-2.5 rounded-xl bg-white text-rdnavy border-2 border-rdnavy font-bold text-xs flex items-center gap-1.5 shadow hover:opacity-95 transition">
-                            <i class="fa-solid fa-cloud-arrow-down"></i> Pull Rows Now
+                        <button type="button" onclick="refreshSubmissionsManual()" class="px-4 py-2.5 rounded-xl bg-white text-rdnavy border-2 border-rdnavy font-bold text-xs flex items-center gap-1.5 shadow hover:opacity-95 transition">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Sync Responses
                         </button>
                     </div>
                 </div>
@@ -1053,58 +1047,17 @@ function doGet(e) {
         const STORAGE_CUSTOM_QR_URL_KEY = "rdccps_custom_qr_url_2027_v1";
         const STORAGE_FORM_DRAFT_KEY = "rdccps_consultancy_form_draft_2027_v1";
 
-        // ---------------------------------------------------------
-        // ZERO-SETUP GLOBAL CLOUD RELAY (Fixes Google Sites Refresh!)
-        // Because Google Sites runs inside https://*-atari-embeds.googleusercontent.com
-        // with a rotating origin on every page refresh, localStorage gets wiped on refresh.
-        // This shared cloud key-value bucket stores all submissions & config on a permanent
-        // cloud endpoint keyed strictly to rdccpscollege@gmail.com so refreshing NEVER loses forms!
-        // ---------------------------------------------------------
+        // Older versions copied full lead records to a public relay. Keep these
+        // functions as no-ops so old call sites cannot expose new submissions.
         const GLOBAL_CLOUD_SYNC_API = "https://kvdb.io/6Wa9sN8y2P4kL7mX3qR5vT";
-        const GLOBAL_SUBMISSIONS_CLOUD_URL = `${GLOBAL_CLOUD_SYNC_API}/rdccps_2027_submissions_v2`;
         const GLOBAL_CONFIG_CLOUD_URL = `${GLOBAL_CLOUD_SYNC_API}/rdccps_2027_config_v2`;
 
         async function pushStateToGlobalCloudRelay() {
-            try {
-                const payload = {
-                    submissions: allSubmissions,
-                    deletedIds: Array.from(deletedSubmissionIds),
-                    updatedAt: new Date().toISOString()
-                };
-                await fetch(GLOBAL_SUBMISSIONS_CLOUD_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) {}
+            return;
         }
 
         async function pullStateFromGlobalCloudRelay() {
-            try {
-                const res = await fetch(`${GLOBAL_SUBMISSIONS_CLOUD_URL}?_t=${Date.now()}`);
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data && Array.isArray(data.deletedIds)) {
-                    data.deletedIds.forEach(id => deletedSubmissionIds.add(String(id)));
-                    saveDeletedIds();
-                    allSubmissions = allSubmissions.filter(s => !deletedSubmissionIds.has(String(s.id)));
-                }
-                if (data && Array.isArray(data.submissions)) {
-                    data.submissions.forEach(item => {
-                        if (item && item.id && !deletedSubmissionIds.has(String(item.id))) {
-                            const existingIdx = allSubmissions.findIndex(s => String(s.id) === String(item.id));
-                            if (existingIdx >= 0) {
-                                allSubmissions[existingIdx] = item;
-                            } else {
-                                allSubmissions.push(item);
-                            }
-                        }
-                    });
-                    allSubmissions.sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
-                    persistSubmissionsLocally();
-                    updateAdminStatsAndBadge();
-                }
-            } catch (e) {}
+            return;
         }
 
         async function pushConfigToGlobalCloudRelay() {
@@ -1147,9 +1100,6 @@ function doGet(e) {
                     updateDriveUIStatus();
                     loadSavedCustomQrLink();
                     renderCustomQRCode();
-                    if (googleScriptWebAppUrl) {
-                        fetchFromGoogleSheet(true);
-                    }
                 }
             } catch (e) {}
         }
@@ -1828,6 +1778,7 @@ function doGet(e) {
         let currentCollageDataUrl = generateDefaultCollageDataURL();
         let isAdminAuthenticated = false;
         let allSubmissions = [];
+        let adminSessionToken = '';
         let lastSubmittedRecord = null;
         let syncChannel = null;
         try {
@@ -1897,19 +1848,51 @@ function doGet(e) {
         }
         window.reloadSubmissionsFromLocal = reloadSubmissionsFromLocal;
 
+        async function fetchAdminLeads() {
+            if (!isAdminAuthenticated || !adminSessionToken) return false;
+            try {
+                const response = await fetch('/.netlify/functions/admin-leads', {
+                    headers: { 'Authorization': `Bearer ${adminSessionToken}` }
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success || !Array.isArray(result.rows)) {
+                    if (response.status === 401) {
+                        adminSessionToken = '';
+                        isAdminAuthenticated = false;
+                        updateAdminUIState();
+                    }
+                    throw new Error(result.error || 'Could not load saved responses.');
+                }
+
+                allSubmissions = [];
+                let removedStaleTombstones = false;
+                result.rows.forEach((entry) => {
+                    if (deletedSubmissionIds.delete(String(entry.id))) removedStaleTombstones = true;
+                    mergeSubmissionEntry(entry);
+                });
+                if (removedStaleTombstones) saveDeletedIds();
+                if (result.rows.length === 0) persistSubmissionsLocally();
+                const sheetLink = document.getElementById('openConnectedSheetBtn');
+                if (sheetLink && result.sheetUrl) sheetLink.href = result.sheetUrl;
+                renderSubmissionsTable();
+                updateAdminStatsAndBadge();
+                return true;
+            } catch (error) {
+                console.warn('Admin response refresh failed:', error?.message || error);
+                return false;
+            }
+        }
+        window.fetchCloudSubmissionsNow = fetchAdminLeads;
+
         window.refreshSubmissionsManual = async function() {
             setLiveDriveSaveState('saving', 'Syncing responses...');
-            reloadSubmissionsFromLocal();
-            await pullConfigFromGlobalCloudRelay();
-            await pullStateFromGlobalCloudRelay();
-            if (typeof window.fetchCloudSubmissionsNow === 'function') {
-                await window.fetchCloudSubmissionsNow();
+            const synced = await fetchAdminLeads();
+            if (synced) {
+                setLiveDriveSaveState('saved', 'All responses synced from Google Sheets');
+            } else {
+                setLiveDriveSaveState('error', 'Could not sync responses');
+                showFeedback('Could not load saved responses. Please sign in again or contact the site administrator.', true);
             }
-            if (googleScriptWebAppUrl) {
-                await fetchFromGoogleSheet(false);
-            }
-            renderSubmissionsTable();
-            setLiveDriveSaveState('saved', 'All responses synced');
         };
 
         window.toggleManualImportModal = function(show) {
@@ -2014,33 +1997,49 @@ function doGet(e) {
             }
         };
 
-        window.handleAdminLogin = function(e) {
+        window.handleAdminLogin = async function(e) {
             e.preventDefault();
             const emailEl = document.getElementById('adminEmailInput');
             const passEl = document.getElementById('adminPassInput');
             const errBox = document.getElementById('adminLoginError');
             const email = emailEl ? emailEl.value.trim().toLowerCase() : '';
             const pass = passEl ? passEl.value.trim() : '';
+            const loginButton = document.querySelector('#adminLoginModal button[type="submit"]');
+            if (errBox) errBox.classList.add('hidden');
+            if (loginButton) loginButton.disabled = true;
 
-            const isAllowedAdminEmail = (email === 'rdccpscollege@gmail.com' || email === 'rdccpcollege@gmail.com');
-            const isAllowedAdminPass = (pass === '9787523888' || pass === '+919787523888' || pass.toLowerCase() === 'rdccps2027');
+            try {
+                const response = await fetch('/.netlify/functions/admin-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success || !result.token) {
+                    throw new Error(result.error || 'Invalid admin email or organizer access key.');
+                }
 
-            if (isAllowedAdminEmail && isAllowedAdminPass) {
+                adminSessionToken = result.token;
                 isAdminAuthenticated = true;
-                try { sessionStorage.setItem('rdccps_admin_auth_session', 'true'); } catch (err) {}
+                if (passEl) passEl.value = '';
                 toggleAdminLoginModal(false);
-                reloadSubmissionsFromLocal();
                 updateAdminUIState();
                 switchTab('admin');
-                refreshSubmissionsManual();
-            } else if (errBox) {
-                errBox.textContent = 'Access Denied: Invalid admin email or organizer access key.';
-                errBox.classList.remove('hidden');
+                await refreshSubmissionsManual();
+            } catch (loginError) {
+                if (passEl) passEl.value = '';
+                if (errBox) {
+                    errBox.textContent = loginError.message || 'Could not sign in to the admin portal.';
+                    errBox.classList.remove('hidden');
+                }
+            } finally {
+                if (loginButton) loginButton.disabled = false;
             }
         };
 
         window.logoutAdmin = function() {
             isAdminAuthenticated = false;
+            adminSessionToken = '';
             try { sessionStorage.removeItem('rdccps_admin_auth_session'); } catch (err) {}
             updateAdminUIState();
         };
@@ -2913,11 +2912,11 @@ function doGet(e) {
 
             if (googleScriptWebAppUrl) {
                 if (pill) {
-                    pill.textContent = 'Google Drive Excel Connected & Auto-Fetching';
+                    pill.textContent = 'Google Sheets API Active';
                     pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rdmaroon text-rdgold';
                 }
                 if (formBadge) {
-                    formBadge.innerHTML = `<i class="fa-brands fa-google-drive text-rdmaroon"></i> <span>Live Google Drive Excel Auto-Sync Active</span>`;
+                    formBadge.innerHTML = `<i class="fa-brands fa-google-drive text-rdmaroon"></i> <span>Google Sheets Auto-Save Active</span>`;
                 }
                 if (previewBox && previewText) {
                     previewBox.classList.remove('hidden');
@@ -2929,7 +2928,7 @@ function doGet(e) {
                 }
             } else {
                 if (pill) {
-                    pill.textContent = 'Portal Database Active (Click Configure for Google Drive)';
+                    pill.textContent = 'Google Sheets API Active';
                     pill.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rdgold/50 text-rdnavy';
                 }
                 if (previewBox) {
@@ -3240,15 +3239,8 @@ function doGet(e) {
             if (tab === 'qr') {
                 renderCustomQRCode();
             } else if (tab === 'admin') {
-                reloadSubmissionsFromLocal();
                 pullConfigFromGlobalCloudRelay();
-                pullStateFromGlobalCloudRelay();
-                if (typeof window.fetchCloudSubmissionsNow === 'function') {
-                    window.fetchCloudSubmissionsNow();
-                }
-                if (googleScriptWebAppUrl) {
-                    fetchFromGoogleSheet(true);
-                }
+                fetchAdminLeads();
                 renderSubmissionsTable();
             }
         };
@@ -3602,7 +3594,29 @@ function doGet(e) {
         };
 
         window.executeConfirmedDelete = async function() {
-            if (!isAdminAuthenticated || !pendingDeleteTarget) return;
+            if (!isAdminAuthenticated || !adminSessionToken || !pendingDeleteTarget) return;
+
+            const deleteAll = pendingDeleteTarget.mode === 'all';
+            const idsToDelete = deleteAll
+                ? allSubmissions.map((item) => String(item.id))
+                : [String(pendingDeleteTarget.id || '')].filter(Boolean);
+            try {
+                const response = await fetch('/.netlify/functions/admin-leads', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${adminSessionToken}`
+                    },
+                    body: JSON.stringify(deleteAll ? { deleteAll: true } : { ids: idsToDelete })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Could not delete the selected response(s) from Google Sheets.');
+                }
+            } catch (deleteError) {
+                showFeedback(deleteError.message || 'Could not delete the selected response(s).', true);
+                return;
+            }
 
             if (pendingDeleteTarget.mode === 'single' && pendingDeleteTarget.id) {
                 const id = String(pendingDeleteTarget.id);
@@ -3615,31 +3629,17 @@ function doGet(e) {
                 if (syncChannel) {
                     try { syncChannel.postMessage({ type: 'DELETE_SUBMISSION', id }); } catch (e) {}
                 }
-                if (typeof window.deleteSubmissionFromCloud === 'function') {
-                    window.deleteSubmissionFromCloud(id);
-                }
-                if (googleScriptWebAppUrl) {
-                    sendEntryToGoogleDriveSheet({ action: 'delete', id });
-                }
             } else if (pendingDeleteTarget.mode === 'all') {
                 const currentIds = allSubmissions.map(s => String(s.id));
                 currentIds.forEach(id => {
                     deletedSubmissionIds.add(id);
-                    if (typeof window.deleteSubmissionFromCloud === 'function') {
-                        window.deleteSubmissionFromCloud(id);
-                    }
                 });
                 saveDeletedIds();
                 allSubmissions = [];
                 persistSubmissionsLocally();
-
-                if (googleScriptWebAppUrl) {
-                    sendEntryToGoogleDriveSheet({ action: 'delete_all' });
-                }
             }
 
             closeDeleteConfirmModal();
-            await pushStateToGlobalCloudRelay();
             updateAdminStatsAndBadge();
         };
 
@@ -3712,13 +3712,6 @@ function doGet(e) {
         // 9. PORTAL INITIALIZATION
         // ---------------------------------------------------------
         function initFirebasePortal() {
-            // Restore admin session if previously unlocked in this tab
-            try {
-                if (sessionStorage.getItem('rdccps_admin_auth_session') === 'true') {
-                    isAdminAuthenticated = true;
-                }
-            } catch (e) {}
-
             // Load saved branding if present
             try {
                 const savedBranding = localStorage.getItem(STORAGE_BRANDING_KEY);
@@ -3744,23 +3737,10 @@ function doGet(e) {
             pullConfigFromGlobalCloudRelay();
             pullStateFromGlobalCloudRelay();
 
-            // Automatically fetch responses from Google Drive Sheet on page load for all users/admins
-            if (googleScriptWebAppUrl) {
-                fetchFromGoogleSheet(true);
-            }
-
-            // Periodic background auto-fetch every 6 seconds so any new form filled on any device
-            // or after refreshing Google Sites appears automatically in the Admin Responses table
+            // Only the signed-in admin fetches the saved response list.
             setInterval(() => {
-                reloadSubmissionsFromLocal();
-                pullStateFromGlobalCloudRelay();
-                if (typeof window.fetchCloudSubmissionsNow === 'function') {
-                    window.fetchCloudSubmissionsNow();
-                }
-                if (googleScriptWebAppUrl) {
-                    fetchFromGoogleSheet(true);
-                }
-            }, 6000);
+                if (isAdminAuthenticated) fetchAdminLeads();
+            }, 15000);
         }
 
         window.addEventListener('storage', function(e) {
@@ -3782,7 +3762,7 @@ function doGet(e) {
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDocs, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rdccps-consultancy-meet-2027-2028';
         let db = null;
@@ -3807,28 +3787,6 @@ function doGet(e) {
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user;
                     if (!user) return;
-
-                    // RULE 1: Strict public collection path for shared event responses
-                    const responsesCol = collection(db, 'artifacts', appId, 'public', 'data', 'consultancy_responses');
-
-                    // Real-time listener with required error callback
-                    onSnapshot(
-                        responsesCol,
-                        (snapshot) => {
-                            snapshot.forEach((docSnap) => {
-                                const data = docSnap.data();
-                                if (data && typeof window.mergeSubmissionEntry === 'function') {
-                                    window.mergeSubmissionEntry({ id: docSnap.id, ...data });
-                                }
-                            });
-                            if (typeof window.renderSubmissionsTable === 'function') {
-                                window.renderSubmissionsTable();
-                            }
-                        },
-                        (err) => {
-                            console.warn('Realtime cloud listener fallback active:', err?.message || err);
-                        }
-                    );
 
                     // Also sync the admin's Google Drive Excel Web App URL across all devices automatically
                     const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'portal_settings', 'drive_config');
@@ -3902,41 +3860,6 @@ function doGet(e) {
                     } catch (err) {}
                 };
 
-                window.saveSubmissionToCloud = async function(entry) {
-                    if (!db || !auth?.currentUser || !entry?.id) return;
-                    try {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'consultancy_responses', entry.id);
-                        await setDoc(docRef, entry);
-                    } catch (err) {
-                        console.warn('Cloud save fallback to local:', err?.message || err);
-                    }
-                };
-
-                window.deleteSubmissionFromCloud = async function(id) {
-                    if (!db || !auth?.currentUser || !id) return;
-                    try {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'consultancy_responses', id);
-                        await deleteDoc(docRef);
-                    } catch (err) {
-                        console.warn('Cloud delete fallback:', err?.message || err);
-                    }
-                };
-
-                window.fetchCloudSubmissionsNow = async function() {
-                    if (!db || !auth?.currentUser) return;
-                    try {
-                        const responsesCol = collection(db, 'artifacts', appId, 'public', 'data', 'consultancy_responses');
-                        const snap = await getDocs(responsesCol);
-                        snap.forEach((docSnap) => {
-                            const data = docSnap.data();
-                            if (data) {
-                                mergeSubmissionEntry({ id: docSnap.id, ...data });
-                            }
-                        });
-                    } catch (err) {
-                        console.warn('Manual cloud fetch fallback:', err?.message || err);
-                    }
-                };
             } catch (err) {
                 console.warn('Cloud sync unavailable in this frame, using multi-layer local storage:', err?.message || err);
             }

@@ -11,7 +11,7 @@ The existing form design is retained in `index.html`. The submission handler now
 5. In Netlify, open the site settings and add these environment variables under **Project configuration → Environment variables**:
    - `GOOGLE_SHEET_ID` = spreadsheet ID
    - `GOOGLE_SERVICE_ACCOUNT_JSON` = the entire service-account JSON as a single-line JSON value
-   - `ALLOWED_ORIGIN` = `https://rd-consultancy-form.netlify.app` (change if the production domain is different)
+   - `ALLOWED_ORIGIN` = `https://rd-college-form.netlify.app` (change if the production domain is different)
    Ensure the variables are available to Functions. Never put the service-account JSON in HTML, JavaScript, Git, or a public repository.
 6. Redeploy the site after setting the variables.
 

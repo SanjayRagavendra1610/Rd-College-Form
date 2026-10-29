@@ -38,7 +38,7 @@ function json(statusCode, body, origin = "") {
 
 export async function handler(event) {
   const origin = event.headers?.origin || event.headers?.Origin || "";
-  const allowedOrigin = process.env.ALLOWED_ORIGIN || "https://rd-college-form.netlify.app";
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || new URL(process.env.URL || "http://localhost:8888").origin;
 
   if (event.httpMethod === "OPTIONS") {
     if (origin && origin !== allowedOrigin) return json(403, { success: false, error: "Origin not allowed." });

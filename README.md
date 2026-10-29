@@ -7,11 +7,11 @@ The existing form design is retained in `index.html`. The submission handler now
 1. In Google Cloud Console, create/select a project and enable **Google Sheets API**.
 2. Create a **service account** and create a JSON key. Keep the JSON private.
 3. Open the target Google Sheet and share it with the service account's `client_email` as **Editor**. Do not make the sheet public.
-4. Confirm the target sheet ID is `1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y`, or change `GOOGLE_SHEET_ID` if you want another sheet.
+4. Set `GOOGLE_SHEET_ID` to the target spreadsheet ID in Netlify.
 5. In Netlify, open the site settings and add these environment variables under **Project configuration → Environment variables**:
    - `GOOGLE_SHEET_ID` = spreadsheet ID
    - `GOOGLE_SERVICE_ACCOUNT_JSON` = the entire service-account JSON as a single-line JSON value
-   - `ALLOWED_ORIGIN` = `https://rd-college-form.netlify.app` (change if the production domain is different)
+   - `ALLOWED_ORIGIN` = the production origin of your Netlify site
    Ensure the variables are available to Functions. Never put the service-account JSON in HTML, JavaScript, Git, or a public repository.
 6. Redeploy the site after setting the variables.
 

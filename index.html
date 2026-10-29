@@ -579,7 +579,7 @@ y<!DOCTYPE html>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        <a id="openConnectedSheetBtn" href="https://docs.google.com/spreadsheets/d/1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="inline-flex px-3 py-1.5 rounded-lg bg-rdmaroon text-rdgold text-xs font-bold items-center gap-1.5 shadow hover:opacity-90 transition">
+                        <a id="openConnectedSheetBtn" href="https://docs.google.com/spreadsheets/" target="_blank" rel="noopener noreferrer" class="inline-flex px-3 py-1.5 rounded-lg bg-rdmaroon text-rdgold text-xs font-bold items-center gap-1.5 shadow hover:opacity-90 transition">
                             <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Drive Sheet
                         </a>
                         <button type="button" onclick="toggleDriveSetupModal(true)" class="px-3.5 py-2 rounded-lg bg-rdnavy text-rdgold font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition">
@@ -819,7 +819,7 @@ y<!DOCTYPE html>
                     <input type="text" id="googleSheetViewUrlInput"
                         oninput="autoSaveDriveUrlOnInput()"
                         onpaste="setTimeout(autoSaveDriveUrlOnInput, 50)"
-                        value="https://docs.google.com/spreadsheets/d/1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y/edit?usp=drive_link"
+                        value=""
                         placeholder="https://docs.google.com/spreadsheets/d/.../edit"
                         class="rd-input w-full rounded-lg px-3.5 py-2.5 text-xs sm:text-sm font-medium">
 
@@ -870,11 +870,11 @@ y<!DOCTYPE html>
                     <textarea id="appsScriptCodeArea" readonly rows="10" class="w-full font-mono text-[11px] bg-rdnavy text-rdgold p-3 rounded-lg border border-rdgold focus:outline-none">// ============================================================
 // RDCCPS Consultancy Meet 2027-2028 – Google Apps Script
 // This script writes form leads directly into YOUR Google Sheet:
-// https://docs.google.com/spreadsheets/d/1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y
+// https://docs.google.com/spreadsheets/
 // Steps: Extensions > Apps Script > Paste > Deploy > Web App > Anyone
 // ============================================================
 
-var SHEET_ID = "1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y";
+var SHEET_ID = "YOUR_GOOGLE_SHEET_ID";
 var TARGET_EMAIL = "rdccpscollege@gmail.com";
 
 function getSheet() {
@@ -914,7 +914,7 @@ function handleAction(sheet, data) {
       MailApp.sendEmail({
         to: "rdccpscollege@gmail.com,rdccpcollege@gmail.com",
         subject: "New RDCCPS Consultancy Registration: " + (data.consultancyName || ""),
-        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/d/1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y"
+        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID"
       });
     } catch(mailErr) {}
     return { status: "success", id: recId, sheetUrl: SpreadsheetApp.openById(SHEET_ID).getUrl() };
@@ -1257,7 +1257,7 @@ function doGet(e) {
         // IMPORTANT: Hardcoded / Pre-configured Google Apps Script Web App URL
         // When you click "Copy Google Sites Embed Code", this constant is automatically filled in the HTML!
         const DEFAULT_EMBEDDED_GOOGLE_SCRIPT_URL = "";
-        const DEFAULT_EMBEDDED_GOOGLE_SHEET_VIEW_URL = "https://docs.google.com/spreadsheets/d/1hQelEc9afXOugKLXaTTb8E58q1z5tNJiWYsbPUO4Z9Y/edit?usp=drive_link";
+        const DEFAULT_EMBEDDED_GOOGLE_SHEET_VIEW_URL = "";
 
         // Default or URL-passed Google Apps Script Web App URL for Google Drive Excel Auto-Sync
         let googleScriptWebAppUrl = DEFAULT_EMBEDDED_GOOGLE_SCRIPT_URL;

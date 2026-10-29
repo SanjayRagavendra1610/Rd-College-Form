@@ -914,7 +914,7 @@ function handleAction(sheet, data) {
       MailApp.sendEmail({
         to: "rdccpscollege@gmail.com,rdccpcollege@gmail.com",
         subject: "New RDCCPS Consultancy Registration: " + (data.consultancyName || ""),
-        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID"
+        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/"
       });
     } catch(mailErr) {}
     return { status: "success", id: recId, sheetUrl: SpreadsheetApp.openById(SHEET_ID).getUrl() };

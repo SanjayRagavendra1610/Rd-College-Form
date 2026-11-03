@@ -83,4 +83,3 @@ export function hasAdminSession(event) {
     return false;
   }
 }
-\n

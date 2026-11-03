@@ -28,4 +28,3 @@ export async function handler(event) {
     return response(500, { success: false, error: "Could not sign in to the admin portal." }, origin);
   }
 }
-\n

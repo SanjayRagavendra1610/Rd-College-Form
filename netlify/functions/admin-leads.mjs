@@ -107,4 +107,3 @@ export async function handler(event) {
     return response(500, { success: false, error: "Could not load saved responses from Google Sheets." }, origin);
   }
 }
-\n

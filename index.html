@@ -3,7 +3,7 @@ y<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDCCPS Consultancy Meet – Admission 2027-2028</title>
+    <title>RDCCPS Consultancy Meet on November 22</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Cinzel for Academic Identity -->
@@ -191,17 +191,14 @@ y<!DOCTYPE html>
 
                 <!-- Header Strip (Building Cover Image Removed) -->
                 <div class="px-5 py-5 bg-rdnavy text-rdlight border-b-2 border-rdgold flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-14 h-16 rounded-lg bg-white/95 border-[1.5px] border-rdgold shadow-md flex items-center justify-center p-1 overflow-hidden shrink-0">
-                            <img id="headerLogoImg" src="" alt="RDCCPS Official Shield Logo" class="w-full h-full object-contain">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-3.5 w-full">
+                        <div class="w-full max-w-[340px] sm:w-[300px] aspect-[1136/472] rounded-lg bg-white border-[1.5px] border-rdgold shadow-md flex items-center justify-center p-1 overflow-hidden shrink-0">
+                            <img id="headerLogoImg" src="assets/rdccps-logo.png" alt="RD College of Commerce and Professional Studies logo" class="w-full h-full object-contain">
                         </div>
-                        <div>
-                            <span class="inline-block px-2.5 py-0.5 rounded-full bg-rdmaroon text-rdgold border border-rdgold text-[10px] font-bold uppercase tracking-widest mb-1">
-                                Consultancy Meet • Admission 2027–2028 on [22/11/2026]
+                        <div class="text-center sm:text-left">
+                            <span class="inline-block px-3 py-1 rounded-full bg-rdmaroon text-rdgold border border-rdgold text-xs sm:text-sm font-bold uppercase tracking-wide mb-1">
+                                Consultancy Meet on 22/11/2026 - 10:00 AM to 12:00 PM
                             </span>
-                            <h2 class="font-serif font-bold text-base sm:text-xl text-rdlight tracking-wide leading-tight">
-                                RD College of Commerce and Professional Studies
-                            </h2>
                             <p class="text-[11px] sm:text-xs text-rdlight/80 mt-0.5"><b>
                                Registration & Requirement Form • Stored for </b><span class="text-rdgold font-semibold underline">rdccpscollege@gmail.com</span>
                             </p>
@@ -716,13 +713,13 @@ y<!DOCTYPE html>
 
             <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
                 <p class="text-xs text-rdnavy/80 bg-white p-3 rounded-lg border border-rdnavy/15">
-                    Logged in as <strong class="text-rdmaroon">rdccpscollege@gmail.com</strong>. Upload a custom <strong>RDCCPS Shield Logo</strong> to update the header icon and QR Code center logo.
+                    Logged in as <strong class="text-rdmaroon">rdccpscollege@gmail.com</strong>. Upload a custom <strong>RDCCPS Shield Logo</strong> to update the navigation icon and QR Code center logo.
                 </p>
 
                 <!-- Upload College Logo -->
                 <div class="bg-white p-4 rounded-xl border-2 border-rdnavy/20 space-y-2">
                     <label class="block text-xs sm:text-sm font-bold text-rdnavy">
-                        Upload RDCCPS Standalone Logo (Header Profile Icon & QR Center)
+                        Upload RDCCPS Standalone Logo (Navigation Icon & QR Center)
                     </label>
                     <input type="file" id="logoFileInput" accept="image/*" onchange="handleImageUpload(event, 'logo')"
                         class="block w-full text-xs text-rdnavy file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-rdnavy file:text-rdgold hover:file:opacity-90 cursor-pointer">
@@ -2048,8 +2045,6 @@ function doGet(e) {
         // 4. INITIALIZE BRANDING & QR CODE WITH CENTER RDCCPS SHIELD
         // ---------------------------------------------------------
         function applyBrandingImages() {
-            const headerLogo = document.getElementById('headerLogoImg');
-            if (headerLogo) headerLogo.src = currentLogoDataUrl;
             const navLogo = document.getElementById('navLogoPreview');
             if (navLogo) navLogo.src = currentLogoDataUrl;
             const collageEl = document.getElementById('headerCollageImg');

@@ -11,6 +11,7 @@ function sheetsClient() {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_SHEET_ID) {
     throw new Error("Google Sheets is not configured.");
   }
+
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const auth = new google.auth.GoogleAuth({
     credentials,
@@ -29,7 +30,7 @@ async function getSheetRows(sheets, spreadsheetId) {
   const sheetTitle = firstSheet.title.replace(/'/g, "''");
   const valuesResult = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `'${sheetTitle}'!A2:J`,
+    range: `'${sheetTitle}'!A2:L`,
   });
   return { firstSheet, sheetTitle, values: valuesResult.data.values || [] };
 }
@@ -37,6 +38,11 @@ async function getSheetRows(sheets, spreadsheetId) {
 function toEntry(row, index) {
   const submittedAt = String(row[0] || "");
   const date = new Date(submittedAt);
+  const attendeeNames = String(row[10] || "").split("\n");
+  const attendeeFoods = String(row[11] || "").split("\n");
+  const attendees = attendeeNames
+    .map((name, attendeeIndex) => ({ name: name.trim(), food: String(attendeeFoods[attendeeIndex] || "").trim() }))
+    .filter((attendee) => attendee.name);
   return {
     id: String(row[9] || `sheet-row-${index + 2}`),
     submittedAt,
@@ -49,6 +55,8 @@ function toEntry(row, index) {
     consultancyRequirements: String(row[6] || ""),
     requiredBrochure: String(row[7] || ""),
     personsAttended: String(row[8] || "1"),
+    attendees,
+    attendeeDetails: attendees.map((attendee, attendeeIndex) => `${attendeeIndex + 1}. ${attendee.name} - ${attendee.food}`).join("\n"),
     targetAccount: "rdccpscollege@gmail.com",
   };
 }

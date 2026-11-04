@@ -269,49 +269,13 @@ y<!DOCTYPE html>
                         </div>
                     </div>
 
-                    <!-- Question 5: Food Options? (Veg or Non Veg Checkboxes) -->
+                    <!-- Question 5: Food preference for each attendee -->
                     <div class="bg-white p-5 rounded-xl border-l-8 border-rdnavy shadow-sm ring-1 ring-rdnavy/10">
                         <label class="block text-sm sm:text-base font-bold text-rdnavy mb-1">
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rdnavy text-rdgold text-xs font-extrabold mr-2">5</span>
-                            Food Options? <span class="text-rdmaroon font-extrabold">*</span>
+                            Food Option for Each Attendee <span class="text-rdmaroon font-extrabold">*</span>
                         </label>
-                        <p class="text-xs text-rdnavy/70 mb-3 ml-8">Select your preferred food option(s) (Veg or Non Veg check box):</p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-0 sm:ml-8">
-                            <!-- Veg Checkbox Option -->
-                            <label class="cursor-pointer block">
-                                <input type="checkbox" name="foodOptions" value="Veg" id="foodVeg" class="food-checkbox sr-only">
-                                <div class="food-card border-2 border-rdnavy/20 rounded-xl p-4 flex items-center justify-between transition hover:border-rdmaroon">
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-6 rounded border-2 border-rdnavy/40 flex items-center justify-center check-badge font-bold text-xs">
-                                            <i class="fa-solid fa-check"></i>
-                                        </span>
-                                        <div>
-                                            <span class="font-bold text-base block">Veg</span>
-                                            <span class="text-xs opacity-75">Pure Vegetarian Meal</span>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-leaf text-xl text-rdgold bg-rdnavy p-2 rounded-lg"></i>
-                                </div>
-                            </label>
-
-                            <!-- Non-Veg Checkbox Option -->
-                            <label class="cursor-pointer block">
-                                <input type="checkbox" name="foodOptions" value="Non Veg" id="foodNonVeg" class="food-checkbox sr-only">
-                                <div class="food-card border-2 border-rdnavy/20 rounded-xl p-4 flex items-center justify-between transition hover:border-rdmaroon">
-                                    <div class="flex items-center gap-3">
-                                        <span class="w-6 h-6 rounded border-2 border-rdnavy/40 flex items-center justify-center check-badge font-bold text-xs">
-                                            <i class="fa-solid fa-check"></i>
-                                        </span>
-                                        <div>
-                                            <span class="font-bold text-base block">Non Veg</span>
-                                            <span class="text-xs opacity-75">Non-Vegetarian Meal</span>
-                                        </div>
-                                    </div>
-                                    <i class="fa-solid fa-utensils text-xl text-rdgold bg-rdmaroon p-2 rounded-lg"></i>
-                                </div>
-                            </label>
-                        </div>
+                        <p class="text-xs text-rdnavy/70 ml-8">After entering the number of attendees, enter each person's name and select Veg or Non Veg below.</p>
                     </div>
 
                     <!-- Question 6: Consultancy's Requirements? -->
@@ -342,9 +306,17 @@ y<!DOCTYPE html>
                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rdmaroon text-rdgold text-xs font-extrabold mr-2">8</span>
                             Number Of Persons attended this Event from your consultancy ? <span class="text-rdmaroon font-extrabold">*</span>
                         </label>
-                        <input type="number" id="personsAttended" name="personsAttended" min="1" required
+                        <input type="number" id="personsAttended" name="personsAttended" min="1" max="10000" required
                             placeholder="Type number of persons attending (e.g., 2)"
                             class="rd-input w-full rounded-lg px-4 py-3 text-sm sm:text-base font-medium">
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border-l-8 border-rdnavy shadow-sm ring-1 ring-rdnavy/10">
+                        <h3 class="text-sm sm:text-base font-bold text-rdnavy mb-1">Attendee Names &amp; Food Options <span class="text-rdmaroon font-extrabold">*</span></h3>
+                        <p class="text-xs text-rdnavy/70 mb-4">Add the name and meal preference for every attendee.</p>
+                        <div id="attendeeFields" class="space-y-4">
+                            <p class="text-sm text-rdnavy/60">Enter the number of persons above to add attendee fields.</p>
+                        </div>
                     </div>
 
                     <!-- Direct Email Copy Option for rdccpscollege@gmail.com -->
@@ -593,11 +565,11 @@ y<!DOCTYPE html>
                         <p id="statPersons" class="text-2xl sm:text-3xl font-extrabold text-rdmaroon mt-1">0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border-2 border-rdnavy/15 shadow-sm">
-                        <span class="text-xs font-bold uppercase text-rdnavy/70">Veg Preference</span>
+                        <span class="text-xs font-bold uppercase text-rdnavy/70">Veg Attendees</span>
                         <p id="statVeg" class="text-2xl sm:text-3xl font-extrabold text-rdnavy mt-1">0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border-2 border-rdnavy/15 shadow-sm">
-                        <span class="text-xs font-bold uppercase text-rdnavy/70">Non-Veg Preference</span>
+                        <span class="text-xs font-bold uppercase text-rdnavy/70">Non-Veg Attendees</span>
                         <p id="statNonVeg" class="text-2xl sm:text-3xl font-extrabold text-rdmaroon mt-1">0</p>
                     </div>
                 </div>
@@ -629,12 +601,13 @@ y<!DOCTYPE html>
                                     <th class="py-3 px-4">6. Requirements</th>
                                     <th class="py-3 px-4">7. Brochure</th>
                                     <th class="py-3 px-4 text-center">8. Persons Attended</th>
+                                    <th class="py-3 px-4">Attendee Names &amp; Food</th>
                                     <th class="py-3 px-4 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="submissionsTableBody" class="divide-y divide-rdnavy/10 text-rdnavy">
                                 <tr>
-                                    <td colspan="10" class="py-10 text-center text-rdnavy/60 font-medium">
+                                    <td colspan="11" class="py-10 text-center text-rdnavy/60 font-medium">
                                         No consultancy registrations recorded yet.
                                     </td>
                                 </tr>
@@ -1125,6 +1098,44 @@ function doGet(e) {
         }
 
         // Auto-save form draft as consultant types so no input is ever lost
+        function getAttendeeEntries() {
+            return Array.from(document.querySelectorAll('#attendeeFields .attendee-entry')).map((entry) => ({
+                name: entry.querySelector('.attendee-name').value.trim(),
+                food: entry.querySelector('.attendee-food').value
+            }));
+        }
+
+        function renderAttendeeFields(attendees = getAttendeeEntries()) {
+            const count = Number(document.getElementById('personsAttended').value);
+            const container = document.getElementById('attendeeFields');
+            if (!Number.isInteger(count) || count < 1 || count > 10000) {
+                container.innerHTML = '<p class="text-sm text-rdnavy/60">Enter the number of persons above to add attendee fields.</p>';
+                return;
+            }
+
+            container.innerHTML = Array.from({ length: count }, (_, index) => `
+                <div class="attendee-entry grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-lg border border-rdnavy/15 bg-rdnavy/5">
+                    <div>
+                        <label for="attendeeName${index}" class="block text-xs font-bold text-rdnavy mb-1">Person ${index + 1} Name <span class="text-rdmaroon">*</span></label>
+                        <input type="text" id="attendeeName${index}" class="attendee-name rd-input w-full rounded-lg px-3 py-2 text-sm" maxlength="500" required placeholder="Enter full name">
+                    </div>
+                    <div>
+                        <label for="attendeeFood${index}" class="block text-xs font-bold text-rdnavy mb-1">Person ${index + 1} Food Option <span class="text-rdmaroon">*</span></label>
+                        <select id="attendeeFood${index}" class="attendee-food rd-input w-full rounded-lg px-3 py-2 text-sm" required>
+                            <option value="">Select food option</option>
+                            <option value="Veg">Veg</option>
+                            <option value="Non Veg">Non Veg</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+
+            Array.from(container.querySelectorAll('.attendee-entry')).forEach((entry, index) => {
+                entry.querySelector('.attendee-name').value = attendees[index]?.name || '';
+                entry.querySelector('.attendee-food').value = attendees[index]?.food || '';
+            });
+        }
+
         function setupFormLiveDraftAutoSave() {
             const form = document.getElementById('consultancyForm');
             if (!form) return;
@@ -1138,16 +1149,19 @@ function doGet(e) {
                         const el = document.getElementById(fieldId);
                         if (el && draft[fieldId]) el.value = draft[fieldId];
                     });
-                    if (Array.isArray(draft.foodOptions)) {
-                        document.querySelectorAll('input[name="foodOptions"]').forEach(cb => {
-                            cb.checked = draft.foodOptions.includes(cb.value);
-                        });
-                    }
+                    const count = Number(document.getElementById('personsAttended').value);
+                    const legacyFood = Array.isArray(draft.foodOptions) ? draft.foodOptions[0] || '' : '';
+                    const attendees = Array.isArray(draft.attendees)
+                        ? draft.attendees
+                        : Array.from({ length: Number.isInteger(count) && count > 0 && count <= 10000 ? count : 0 }, () => ({ food: legacyFood }));
+                    renderAttendeeFields(attendees);
                 }
             } catch (e) {}
 
+            document.getElementById('personsAttended').addEventListener('input', () => renderAttendeeFields());
+
             // Save on every input change
-            form.addEventListener('input', function() {
+            const saveDraft = function() {
                 setLiveDriveSaveState('saving', 'Auto-saving draft...');
                 try {
                     const draftObj = {
@@ -1158,7 +1172,7 @@ function doGet(e) {
                         consultancyRequirements: document.getElementById('consultancyRequirements')?.value || '',
                         requiredBrochure: document.getElementById('requiredBrochure')?.value || '',
                         personsAttended: document.getElementById('personsAttended')?.value || '',
-                        foodOptions: Array.from(document.querySelectorAll('input[name="foodOptions"]:checked')).map(cb => cb.value),
+                        attendees: getAttendeeEntries(),
                         updatedAt: new Date().toISOString()
                     };
                     localStorage.setItem(STORAGE_FORM_DRAFT_KEY, JSON.stringify(draftObj));
@@ -1166,7 +1180,9 @@ function doGet(e) {
                 saveBadgeTimeout = setTimeout(() => {
                     setLiveDriveSaveState('saved', 'Changes saved in Drive');
                 }, 450);
-            });
+            };
+            form.addEventListener('input', saveDraft);
+            form.addEventListener('change', saveDraft);
         }
 
         // Automatic background email dispatch to rdccpscollege@gmail.com & rdccpcollege@gmail.com
@@ -3265,13 +3281,12 @@ function doGet(e) {
             const consultancyRequirements = document.getElementById('consultancyRequirements').value.trim();
             const requiredBrochure = document.getElementById('requiredBrochure').value.trim();
             const personsAttended = document.getElementById('personsAttended').value.trim();
-
-            const foodChecked = Array.from(document.querySelectorAll('input[name="foodOptions"]:checked')).map(cb => cb.value);
-
-            if (foodChecked.length === 0) {
-                showFeedback('Please check at least one Food Option (Veg or Non Veg) for Question 5.', true);
+            const attendees = getAttendeeEntries();
+            if (attendees.length !== Number(personsAttended) || attendees.some((attendee) => !attendee.name || !['Veg', 'Non Veg'].includes(attendee.food))) {
+                showFeedback('Enter a name and food option for every attendee.', true);
                 return;
             }
+            const foodOptions = Array.from(new Set(attendees.map((attendee) => attendee.food))).join(', ');
 
             document.getElementById('formFeedback').classList.add('hidden');
             const submitBtn = document.getElementById('submitBtn');
@@ -3284,10 +3299,12 @@ function doGet(e) {
                 consultantName,
                 consultancyAddress,
                 contactNumber,
-                foodOptions: foodChecked.join(', '),
+                foodOptions,
                 consultancyRequirements,
                 requiredBrochure,
                 personsAttended,
+                attendees,
+                attendeeDetails: attendees.map((attendee, index) => `${index + 1}. ${attendee.name} - ${attendee.food}`).join('\n'),
                 targetAccount: 'rdccpscollege@gmail.com',
                 submittedAt: new Date().toISOString(),
                 submittedReadable: new Date().toLocaleString('en-IN')
@@ -3357,6 +3374,7 @@ function doGet(e) {
                 <div><strong>6. Requirements:</strong> ${escapeHtml(record.consultancyRequirements)}</div>
                 <div><strong>7. Required Brochure:</strong> ${escapeHtml(record.requiredBrochure)}</div>
                 <div><strong>8. Number Of Persons Attended:</strong> ${escapeHtml(record.personsAttended)}</div>
+                <div><strong>Attendees:</strong><br>${escapeHtml(record.attendeeDetails).replace(/\n/g, '<br>')}</div>
             `;
 
             document.getElementById('successModal').classList.remove('hidden');
@@ -3367,6 +3385,7 @@ function doGet(e) {
             }
 
             document.getElementById('consultancyForm').reset();
+            renderAttendeeFields([]);
         });
 
         window.closeSuccessModal = function() {
@@ -3398,6 +3417,7 @@ function doGet(e) {
                 `6. Consultancy's Requirements: ${r.consultancyRequirements}\n` +
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
                 `8. Number Of Persons attended this Event from your consultancy: ${r.personsAttended}\n` +
+                `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `------------------------------------------------------\n` +
                 `Submitted On: ${r.submittedReadable}\n` +
                 `Support Contact: +91 9787523888`
@@ -3418,6 +3438,7 @@ function doGet(e) {
                 `6. Consultancy's Requirements: ${r.consultancyRequirements}\n` +
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
                 `8. Number Of Persons attended: ${r.personsAttended}\n` +
+                `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `Submitted On: ${r.submittedReadable}`
             );
             window.open(`https://wa.me/919787523888?text=${text}`, '_blank');
@@ -3443,8 +3464,15 @@ function doGet(e) {
             allSubmissions.forEach(item => {
                 const food = String(item.foodOptions || '');
                 const parts = food.split(',').map(s => s.trim());
-                if (parts.includes('Veg')) vegCount++;
-                if (parts.includes('Non Veg')) nonVegCount++;
+                if (Array.isArray(item.attendees) && item.attendees.length) {
+                    item.attendees.forEach((attendee) => {
+                        if (attendee.food === 'Veg') vegCount++;
+                        if (attendee.food === 'Non Veg') nonVegCount++;
+                    });
+                } else {
+                    if (parts.includes('Veg')) vegCount++;
+                    if (parts.includes('Non Veg')) nonVegCount++;
+                }
                 const p = parseInt(item.personsAttended, 10);
                 if (!isNaN(p) && p > 0) totalPersons += p;
             });
@@ -3476,6 +3504,7 @@ function doGet(e) {
                     (item.contactNumber || '').toLowerCase().includes(queryText) ||
                     (item.foodOptions || '').toLowerCase().includes(queryText) ||
                     (item.consultancyAddress || '').toLowerCase().includes(queryText) ||
+                    (item.attendeeDetails || '').toLowerCase().includes(queryText) ||
                     String(item.personsAttended || '').toLowerCase().includes(queryText)
                 );
             });
@@ -3483,7 +3512,7 @@ function doGet(e) {
             if (filtered.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="py-10 text-center text-rdnavy/60 font-medium">
+                        <td colspan="11" class="py-10 text-center text-rdnavy/60 font-medium">
                             No matching consultancy registrations found.
                         </td>
                     </tr>
@@ -3508,6 +3537,7 @@ function doGet(e) {
                     <td class="py-3 px-4 max-w-xs">${escapeHtml(item.consultancyRequirements)}</td>
                     <td class="py-3 px-4 font-medium">${escapeHtml(item.requiredBrochure)}</td>
                     <td class="py-3 px-4 font-bold text-center text-rdmaroon">${escapeHtml(item.personsAttended || '1')}</td>
+                    <td class="py-3 px-4 whitespace-pre-line">${escapeHtml(item.attendeeDetails || '')}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">
                         <button type="button" onclick="deleteSubmission('${escapeHtml(item.id)}')" title="Delete This Received Form" class="px-3 py-1.5 rounded-lg bg-rdmaroon text-rdgold border border-rdgold hover:opacity-90 text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
                             <i class="fa-solid fa-trash-can"></i>
@@ -3656,6 +3686,7 @@ function doGet(e) {
                 '6. Consultancy Requirements',
                 '7. Required Brochure',
                 '8. Number Of Persons Attended',
+                'Attendee Names & Food Options',
                 'Submitted Timestamp',
                 'Official Account'
             ];
@@ -3670,6 +3701,7 @@ function doGet(e) {
                 `"${String(item.consultancyRequirements || '').replace(/"/g, '""')}"`,
                 `"${String(item.requiredBrochure || '').replace(/"/g, '""')}"`,
                 `"${String(item.personsAttended || '').replace(/"/g, '""')}"`,
+                `"${String(item.attendeeDetails || '').replace(/"/g, '""')}"`,
                 `"${String(item.submittedReadable || '')}"`,
                 `"rdccpscollege@gmail.com"`
             ]);
@@ -3689,7 +3721,7 @@ function doGet(e) {
             if (!isAdminAuthenticated) return;
             const subject = encodeURIComponent(`RDCCPS Consultancy Meet - Admission 2027-2028 Summary (${allSubmissions.length} Registrations)`);
             const lines = allSubmissions.map((r, i) =>
-                `${i + 1}. ${r.consultancyName} | Consultant: ${r.consultantName} | Ph: ${r.contactNumber} | Food: ${r.foodOptions} | Brochure: ${r.requiredBrochure} | Persons Attended: ${r.personsAttended || '1'} | Req: ${r.consultancyRequirements}`
+                `${i + 1}. ${r.consultancyName} | Consultant: ${r.consultantName} | Ph: ${r.contactNumber} | Food: ${r.foodOptions} | Attendees: ${r.attendeeDetails || 'Not recorded'} | Brochure: ${r.requiredBrochure} | Persons Attended: ${r.personsAttended || '1'} | Req: ${r.consultancyRequirements}`
             ).join('\n');
 
             const body = encodeURIComponent(

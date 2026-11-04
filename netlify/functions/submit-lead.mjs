@@ -5,7 +5,6 @@ const REQUIRED_FIELDS = [
   "consultantName",
   "consultancyAddress",
   "contactNumber",
-  "foodOptions",
   "consultancyRequirements",
   "requiredBrochure",
   "personsAttended",
@@ -22,6 +21,8 @@ const HEADERS = [
   "7. Required Brochure",
   "8. Persons Attended",
   "Record ID",
+  "9. Attendee Names (one per line)",
+  "10. Attendee Food Options (same order)",
 ];
 
 function json(statusCode, body, origin = "") {
@@ -82,6 +83,22 @@ export async function handler(event) {
     if (!Number.isInteger(persons) || persons < 1 || persons > 10000) {
       return json(400, { success: false, error: "Invalid number of persons." }, origin);
     }
+    if (!Array.isArray(payload.attendees) || payload.attendees.length !== persons) {
+      return json(400, { success: false, error: "Add a name and food option for every attendee." }, origin);
+    }
+    for (const attendee of payload.attendees) {
+      if (!attendee || typeof attendee.name !== "string" || !attendee.name.trim() || attendee.name.length > 500) {
+        return json(400, { success: false, error: "Each attendee must have a valid name." }, origin);
+      }
+      if (!["Veg", "Non Veg"].includes(attendee.food)) {
+        return json(400, { success: false, error: "Each attendee must have a valid food option." }, origin);
+      }
+    }
+    const attendeeNames = payload.attendees.map((attendee) => attendee.name.trim()).join("\n");
+    const attendeeFoods = payload.attendees.map((attendee) => attendee.food).join("\n");
+    if (attendeeNames.length > 45000 || attendeeFoods.length > 45000) {
+      return json(400, { success: false, error: "Attendee details are too long to save. Reduce the number or length of names." }, origin);
+    }
 
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
     const auth = new google.auth.GoogleAuth({
@@ -99,17 +116,17 @@ export async function handler(event) {
     if (!firstSheet?.title) throw new Error("Spreadsheet does not contain a worksheet.");
 
     const sheetTitle = firstSheet.title.replace(/'/g, "''");
-    const range = `'${sheetTitle}'!A:J`;
+    const range = `'${sheetTitle}'!A:L`;
 
     const existing = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `'${sheetTitle}'!A1:J1`,
+      range: `'${sheetTitle}'!A1:L1`,
     });
 
     if (!existing.data.values?.length) {
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `'${sheetTitle}'!A1:J1`,
+        range: `'${sheetTitle}'!A1:L1`,
         valueInputOption: "RAW",
         requestBody: { values: [HEADERS] },
       });
@@ -130,6 +147,19 @@ export async function handler(event) {
           }],
         },
       });
+    } else {
+      const currentHeaders = existing.data.values[0];
+      for (const columnIndex of [10, 11]) {
+        if (!currentHeaders[columnIndex]) {
+          const column = String.fromCharCode(65 + columnIndex);
+          await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: `'${sheetTitle}'!${column}1`,
+            valueInputOption: "RAW",
+            requestBody: { values: [[HEADERS[columnIndex]]] },
+          });
+        }
+      }
     }
 
     // Avoid appending the same submission ID twice if a client retries.
@@ -147,6 +177,7 @@ export async function handler(event) {
     }
 
     const timestamp = payload.submittedAt || new Date().toISOString();
+    const foodOptions = [...new Set(payload.attendees.map((attendee) => attendee.food))].join(", ");
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
@@ -159,11 +190,13 @@ export async function handler(event) {
           payload.consultantName.trim(),
           payload.consultancyAddress.trim(),
           payload.contactNumber.trim(),
-          payload.foodOptions.trim(),
+          foodOptions,
           payload.consultancyRequirements.trim(),
           payload.requiredBrochure.trim(),
           String(persons),
           recordId,
+          attendeeNames,
+          attendeeFoods,
         ]],
       },
     });

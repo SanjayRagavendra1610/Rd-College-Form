@@ -6,6 +6,7 @@ import {
   optionsResponse,
   response,
 } from "./_shared/admin-auth.mjs";
+import { ensureLeadSheetSchema } from "./_shared/lead-sheet-schema.mjs";
 
 function sheetsClient() {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_SHEET_ID) {
@@ -23,14 +24,14 @@ function sheetsClient() {
 async function getSheetRows(sheets, spreadsheetId) {
   const spreadsheet = await sheets.spreadsheets.get({
     spreadsheetId,
-    fields: "sheets.properties(sheetId,title)",
+    fields: "sheets.properties(sheetId,title,gridProperties)",
   });
   const firstSheet = spreadsheet.data.sheets?.[0]?.properties;
   if (!firstSheet?.title) throw new Error("Spreadsheet does not contain a worksheet.");
-  const sheetTitle = firstSheet.title.replace(/'/g, "''");
+  const sheetTitle = await ensureLeadSheetSchema(sheets, spreadsheetId, firstSheet);
   const valuesResult = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `'${sheetTitle}'!A2:L`,
+    range: `'${sheetTitle}'!A2:M`,
   });
   return { firstSheet, sheetTitle, values: valuesResult.data.values || [] };
 }
@@ -44,7 +45,7 @@ function toEntry(row, index) {
     .map((name, attendeeIndex) => ({ name: name.trim(), food: String(attendeeFoods[attendeeIndex] || "").trim() }))
     .filter((attendee) => attendee.name);
   return {
-    id: String(row[9] || `sheet-row-${index + 2}`),
+    id: String(row[10] || `sheet-row-${index + 2}`),
     submittedAt,
     submittedReadable: Number.isNaN(date.getTime()) ? submittedAt : date.toLocaleString("en-IN"),
     consultancyName: String(row[1] || ""),
@@ -54,7 +55,8 @@ function toEntry(row, index) {
     foodOptions: String(row[5] || ""),
     consultancyRequirements: String(row[6] || ""),
     requiredBrochure: String(row[7] || ""),
-    personsAttended: String(row[8] || "1"),
+    brochureContactNumber: String(row[8] || ""),
+    personsAttended: String(row[9] || "1"),
     attendees,
     attendeeDetails: attendees.map((attendee, attendeeIndex) => `${attendeeIndex + 1}. ${attendee.name} - ${attendee.food}`).join("\n"),
     targetAccount: "rdccpscollege@gmail.com",
@@ -84,7 +86,7 @@ export async function handler(event) {
       }
       const matchingIndexes = values
         .map((row, index) => ({ row, index }))
-        .filter(({ row, index }) => deleteAll || ids.has(String(row[9] || `sheet-row-${index + 2}`)))
+        .filter(({ row, index }) => deleteAll || ids.has(String(row[10] || `sheet-row-${index + 2}`)))
         .map(({ index }) => index + 1)
         .sort((a, b) => b - a);
 

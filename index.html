@@ -295,10 +295,21 @@ y<!DOCTYPE html>
                             class="rd-input w-full rounded-lg px-4 py-3 text-sm sm:text-base font-medium">
                     </div>
 
-                    <!-- Question 7: Number Of Persons attended this Event from your consultancy ? -->
+                    <!-- Question 7: Contact Number for Brochure Printing -->
+                    <div class="bg-white p-5 rounded-xl border-l-8 border-rdmaroon shadow-sm ring-1 ring-rdnavy/10">
+                        <label for="brochureContactNumber" class="block text-sm sm:text-base font-bold text-rdnavy mb-2">
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rdmaroon text-rdgold text-xs font-extrabold mr-2">7</span>
+                            Contact Number for Brochure Printing <span class="text-rdmaroon font-extrabold">*</span>
+                        </label>
+                        <input type="tel" id="brochureContactNumber" name="brochureContactNumber" required
+                            placeholder="Type contact number for brochure printing"
+                            class="rd-input w-full rounded-lg px-4 py-3 text-sm sm:text-base font-medium">
+                    </div>
+
+                    <!-- Question 8: Number Of Persons attended this Event from your consultancy ? -->
                     <div class="bg-white p-5 rounded-xl border-l-8 border-rdmaroon shadow-sm ring-1 ring-rdnavy/10">
                         <label for="personsAttended" class="block text-sm sm:text-base font-bold text-rdnavy mb-2">
-                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rdmaroon text-rdgold text-xs font-extrabold mr-2">7</span>
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rdmaroon text-rdgold text-xs font-extrabold mr-2">8</span>
                             Number Of Persons attended this Event from your consultancy ? <span class="text-rdmaroon font-extrabold">*</span>
                         </label>
                         <input type="number" id="personsAttended" name="personsAttended" min="1" max="10000" required
@@ -595,14 +606,15 @@ y<!DOCTYPE html>
                                     <th class="py-3 px-4">5. Food</th>
                                     <th class="py-3 px-4">6. Requirements</th>
                                     <th class="py-3 px-4">7. Brochure</th>
-                                    <th class="py-3 px-4 text-center">8. Persons Attended</th>
+                                    <th class="py-3 px-4">8. Brochure Printing Contact</th>
+                                    <th class="py-3 px-4 text-center">9. Persons Attended</th>
                                     <th class="py-3 px-4">Attendee Names &amp; Food</th>
                                     <th class="py-3 px-4 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="submissionsTableBody" class="divide-y divide-rdnavy/10 text-rdnavy">
                                 <tr>
-                                    <td colspan="11" class="py-10 text-center text-rdnavy/60 font-medium">
+                                    <td colspan="12" class="py-10 text-center text-rdnavy/60 font-medium">
                                         No consultancy registrations recorded yet.
                                     </td>
                                 </tr>
@@ -840,9 +852,13 @@ function getSheet() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheets()[0];
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["Timestamp", "1. Consultancy Name", "2. Consultant Name", "3. Consultancy Address", "4. Contact Number", "5. Food Options", "6. Requirements", "7. Required Brochure", "8. Persons Attended", "Record ID"]);
-    sheet.getRange(1, 1, 1, 10).setBackground("#0D294D").setFontColor("#E8D587").setFontWeight("bold");
+    sheet.appendRow(["Timestamp", "1. Consultancy Name", "2. Consultant Name", "3. Consultancy Address", "4. Contact Number", "5. Food Options", "6. Requirements", "7. Required Brochure", "8. Contact Number for Brochure Printing", "9. Persons Attended", "Record ID", "10. Attendee Names (one per line)", "11. Attendee Food Options (same order)"]);
+    sheet.getRange(1, 1, 1, 13).setBackground("#0D294D").setFontColor("#E8D587").setFontWeight("bold");
     sheet.setFrozenRows(1);
+  } else if (sheet.getRange(1, 8).getValue() === "7. Required Brochure" &&
+             sheet.getRange(1, 9).getValue() !== "8. Contact Number for Brochure Printing") {
+    sheet.insertColumnAfter(8);
+    sheet.getRange(1, 9, 1, 5).setValues([["8. Contact Number for Brochure Printing", "9. Persons Attended", "Record ID", "10. Attendee Names (one per line)", "11. Attendee Food Options (same order)"]]);
   }
   return sheet;
 }
@@ -851,7 +867,7 @@ function handleAction(sheet, data) {
   if (data.action === "delete" && data.id) {
     var rows = sheet.getDataRange().getValues();
     for (var i = rows.length - 1; i >= 1; i--) {
-      if (String(rows[i][9]) === String(data.id)) { sheet.deleteRow(i + 1); }
+      if (String(rows[i][10]) === String(data.id)) { sheet.deleteRow(i + 1); }
     }
     return { status: "deleted", sheetUrl: SpreadsheetApp.openById(SHEET_ID).getUrl() };
   }
@@ -862,18 +878,18 @@ function handleAction(sheet, data) {
   if (data.consultancyName || data.consultantName || data.contactNumber) {
     var rows = sheet.getDataRange().getValues();
     for (var r = 1; r < rows.length; r++) {
-      if (data.id && String(rows[r][9]) === String(data.id)) {
+      if (data.id && String(rows[r][10]) === String(data.id)) {
         return { status: "already_exists" };
       }
     }
     var ts = data.submittedReadable || new Date().toLocaleString("en-IN");
     var recId = data.id || ("id_" + new Date().getTime());
-    sheet.appendRow([ ts, data.consultancyName||"", data.consultantName||"", data.consultancyAddress||"", data.contactNumber||"", data.foodOptions||"", data.consultancyRequirements||"", data.requiredBrochure||"", data.personsAttended||"1", recId ]);
+    sheet.appendRow([ ts, data.consultancyName||"", data.consultantName||"", data.consultancyAddress||"", data.contactNumber||"", data.foodOptions||"", data.consultancyRequirements||"", data.requiredBrochure||"", data.brochureContactNumber||"", data.personsAttended||"1", recId, data.attendeeNames||"", data.attendeeFoods||"" ]);
     try {
       MailApp.sendEmail({
         to: "rdccpscollege@gmail.com,rdccpcollege@gmail.com",
         subject: "New RDCCPS Consultancy Registration: " + (data.consultancyName || ""),
-        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/"
+        body: "RDCCPS CONSULTANCY MEET – ADMISSION 2027-2028\n\n1. Consultancy Name: " + (data.consultancyName||"") + "\n2. Consultant Name: " + (data.consultantName||"") + "\n3. Address: " + (data.consultancyAddress||"") + "\n4. Contact: " + (data.contactNumber||"") + "\n5. Food: " + (data.foodOptions||"") + "\n6. Requirements: " + (data.consultancyRequirements||"") + "\n7. Brochure: " + (data.requiredBrochure||"") + "\n8. Brochure Printing Contact: " + (data.brochureContactNumber||"") + "\n9. Persons: " + (data.personsAttended||"1") + "\nSubmitted: " + ts + "\n\nView all responses: https://docs.google.com/spreadsheets/"
       });
     } catch(mailErr) {}
     return { status: "success", id: recId, sheetUrl: SpreadsheetApp.openById(SHEET_ID).getUrl() };
@@ -906,7 +922,7 @@ function doGet(e) {
   var rows = sheet.getDataRange().getValues();
   var result = [];
   for (var i = 1; i < rows.length; i++) {
-    result.push({ submittedReadable: String(rows[i][0]||""), consultancyName: String(rows[i][1]||""), consultantName: String(rows[i][2]||""), consultancyAddress: String(rows[i][3]||""), contactNumber: String(rows[i][4]||""), foodOptions: String(rows[i][5]||""), consultancyRequirements: String(rows[i][6]||""), requiredBrochure: String(rows[i][7]||""), personsAttended: String(rows[i][8]||"1"), id: String(rows[i][9]||("row_"+i)) });
+    result.push({ submittedReadable: String(rows[i][0]||""), consultancyName: String(rows[i][1]||""), consultantName: String(rows[i][2]||""), consultancyAddress: String(rows[i][3]||""), contactNumber: String(rows[i][4]||""), foodOptions: String(rows[i][5]||""), consultancyRequirements: String(rows[i][6]||""), requiredBrochure: String(rows[i][7]||""), brochureContactNumber: String(rows[i][8]||""), personsAttended: String(rows[i][9]||"1"), id: String(rows[i][10]||("row_"+i)) });
   }
   var out = { rows: result, sheetUrl: SpreadsheetApp.openById(SHEET_ID).getUrl() };
   if (e && e.parameter && e.parameter.callback) {
@@ -969,7 +985,7 @@ function doGet(e) {
                     Paste any WhatsApp/Email registration receipt text or JSON backup below to immediately add it into your <strong>Responses</strong> table and Google Drive Excel Sheet.
                 </p>
                 <textarea id="manualImportTextarea" rows="7"
-                    placeholder="Paste WhatsApp / Email receipt text here:&#10;1. Consultancy Name: ...&#10;2. Consultant Name: ...&#10;3. Consultancy Address: ...&#10;4. Contact Number: ...&#10;5. Food Options: Veg&#10;6. Consultancy's Requirements: ...&#10;7. Required Brochure: ...&#10;8. Number Of Persons attended: 2"
+                    placeholder="Paste WhatsApp / Email receipt text here:&#10;1. Consultancy Name: ...&#10;2. Consultant Name: ...&#10;3. Consultancy Address: ...&#10;4. Contact Number: ...&#10;5. Food Options: Veg&#10;6. Consultancy's Requirements: ...&#10;7. Required Brochure: ...&#10;8. Contact Number for Brochure Printing: ...&#10;9. Number Of Persons attended: 2"
                     class="rd-input w-full rounded-xl p-3.5 text-xs font-mono"></textarea>
                 <div id="manualImportFeedback" class="hidden rounded-lg p-2.5 text-xs font-bold"></div>
                 <div class="flex items-center justify-end gap-3">
@@ -1140,7 +1156,7 @@ function doGet(e) {
                 const rawDraft = localStorage.getItem(STORAGE_FORM_DRAFT_KEY);
                 if (rawDraft) {
                     const draft = JSON.parse(rawDraft);
-                    ['consultancyName', 'consultantName', 'consultancyAddress', 'contactNumber', 'consultancyRequirements', 'requiredBrochure', 'personsAttended'].forEach(fieldId => {
+                    ['consultancyName', 'consultantName', 'consultancyAddress', 'contactNumber', 'consultancyRequirements', 'requiredBrochure', 'brochureContactNumber', 'personsAttended'].forEach(fieldId => {
                         const el = document.getElementById(fieldId);
                         if (el && draft[fieldId]) el.value = draft[fieldId];
                     });
@@ -1166,6 +1182,7 @@ function doGet(e) {
                         contactNumber: document.getElementById('contactNumber')?.value || '',
                         consultancyRequirements: document.getElementById('consultancyRequirements')?.value || '',
                         requiredBrochure: document.getElementById('requiredBrochure')?.value || '',
+                        brochureContactNumber: document.getElementById('brochureContactNumber')?.value || '',
                         personsAttended: document.getElementById('personsAttended')?.value || '',
                         attendees: getAttendeeEntries(),
                         updatedAt: new Date().toISOString()
@@ -1198,7 +1215,8 @@ function doGet(e) {
                 '5_Food_Options': entry.foodOptions,
                 '6_Consultancy_Requirements': entry.consultancyRequirements,
                 '7_Required_Brochure': entry.requiredBrochure,
-                '8_Persons_Attended': entry.personsAttended,
+                '8_Brochure_Printing_Contact': entry.brochureContactNumber,
+                '9_Persons_Attended': entry.personsAttended,
                 'Submitted_Time': entry.submittedReadable
             };
             for (const url of endpoints) {
@@ -3078,6 +3096,7 @@ function doGet(e) {
                             foodOptions: item.foodOptions || 'Veg',
                             consultancyRequirements: item.consultancyRequirements || '',
                             requiredBrochure: item.requiredBrochure || '',
+                            brochureContactNumber: item.brochureContactNumber || '',
                             personsAttended: String(item.personsAttended || '1'),
                             submittedAt: item.submittedAt || new Date().toISOString(),
                             submittedReadable: item.submittedReadable || new Date().toLocaleString('en-IN')
@@ -3105,7 +3124,8 @@ function doGet(e) {
                 const foodOptions = extractField(/5\.\s*Food Options:\s*(.+)/i) || 'Veg';
                 const consultancyRequirements = extractField(/6\.\s*(?:Consultancy's\s*)?Requirements:\s*(.+)/i);
                 const requiredBrochure = extractField(/7\.\s*Required Brochure:\s*(.+)/i);
-                const personsAttended = extractField(/8\.\s*Number Of Persons[^:]*:\s*(.+)/i) || '1';
+                const brochureContactNumber = extractField(/8\.\s*(?:Brochure Printing )?Contact Number[^:]*:\s*(.+)/i);
+                const personsAttended = extractField(/9\.\s*Number Of Persons[^:]*:\s*(.+)/i) || extractField(/8\.\s*Number Of Persons[^:]*:\s*(.+)/i) || '1';
 
                 if (consultancyName || consultantName || contactNumber) {
                     const entry = {
@@ -3117,6 +3137,7 @@ function doGet(e) {
                         foodOptions,
                         consultancyRequirements,
                         requiredBrochure,
+                        brochureContactNumber,
                         personsAttended,
                         submittedAt: new Date().toISOString(),
                         submittedReadable: new Date().toLocaleString('en-IN')
@@ -3275,6 +3296,7 @@ function doGet(e) {
             const contactNumber = document.getElementById('contactNumber').value.trim();
             const consultancyRequirements = document.getElementById('consultancyRequirements').value.trim();
             const requiredBrochure = document.getElementById('requiredBrochure').value.trim();
+            const brochureContactNumber = document.getElementById('brochureContactNumber').value.trim();
             const personsAttended = document.getElementById('personsAttended').value.trim();
             const attendees = getAttendeeEntries();
             if (attendees.length !== Number(personsAttended) || attendees.some((attendee) => !attendee.name || !['Veg', 'Non Veg'].includes(attendee.food))) {
@@ -3297,6 +3319,7 @@ function doGet(e) {
                 foodOptions,
                 consultancyRequirements,
                 requiredBrochure,
+                brochureContactNumber,
                 personsAttended,
                 attendees,
                 attendeeDetails: attendees.map((attendee, index) => `${index + 1}. ${attendee.name} - ${attendee.food}`).join('\n'),
@@ -3368,7 +3391,8 @@ function doGet(e) {
                 <div><strong>5. Food Options:</strong> ${escapeHtml(record.foodOptions)}</div>
                 <div><strong>6. Requirements:</strong> ${escapeHtml(record.consultancyRequirements)}</div>
                 <div><strong>7. Required Brochure:</strong> ${escapeHtml(record.requiredBrochure)}</div>
-                <div><strong>8. Number Of Persons Attended:</strong> ${escapeHtml(record.personsAttended)}</div>
+                <div><strong>8. Contact Number for Brochure Printing:</strong> ${escapeHtml(record.brochureContactNumber)}</div>
+                <div><strong>9. Number Of Persons Attended:</strong> ${escapeHtml(record.personsAttended)}</div>
                 <div><strong>Attendees:</strong><br>${escapeHtml(record.attendeeDetails).replace(/\n/g, '<br>')}</div>
             `;
 
@@ -3411,7 +3435,8 @@ function doGet(e) {
                 `5. Food Options: ${r.foodOptions}\n` +
                 `6. Consultancy's Requirements: ${r.consultancyRequirements}\n` +
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
-                `8. Number Of Persons attended this Event from your consultancy: ${r.personsAttended}\n` +
+                `8. Contact Number for Brochure Printing: ${r.brochureContactNumber}\n` +
+                `9. Number Of Persons attended this Event from your consultancy: ${r.personsAttended}\n` +
                 `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `------------------------------------------------------\n` +
                 `Submitted On: ${r.submittedReadable}\n` +
@@ -3432,7 +3457,8 @@ function doGet(e) {
                 `5. Food Options: ${r.foodOptions}\n` +
                 `6. Consultancy's Requirements: ${r.consultancyRequirements}\n` +
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
-                `8. Number Of Persons attended: ${r.personsAttended}\n` +
+                `8. Contact Number for Brochure Printing: ${r.brochureContactNumber}\n` +
+                `9. Number Of Persons attended: ${r.personsAttended}\n` +
                 `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `Submitted On: ${r.submittedReadable}`
             );
@@ -3499,6 +3525,7 @@ function doGet(e) {
                     (item.contactNumber || '').toLowerCase().includes(queryText) ||
                     (item.foodOptions || '').toLowerCase().includes(queryText) ||
                     (item.consultancyAddress || '').toLowerCase().includes(queryText) ||
+                    (item.brochureContactNumber || '').toLowerCase().includes(queryText) ||
                     (item.attendeeDetails || '').toLowerCase().includes(queryText) ||
                     String(item.personsAttended || '').toLowerCase().includes(queryText)
                 );
@@ -3507,7 +3534,7 @@ function doGet(e) {
             if (filtered.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="11" class="py-10 text-center text-rdnavy/60 font-medium">
+                        <td colspan="12" class="py-10 text-center text-rdnavy/60 font-medium">
                             No matching consultancy registrations found.
                         </td>
                     </tr>
@@ -3531,6 +3558,7 @@ function doGet(e) {
                     </td>
                     <td class="py-3 px-4 max-w-xs">${escapeHtml(item.consultancyRequirements)}</td>
                     <td class="py-3 px-4 font-medium">${escapeHtml(item.requiredBrochure)}</td>
+                    <td class="py-3 px-4 font-semibold whitespace-nowrap">${escapeHtml(item.brochureContactNumber || '')}</td>
                     <td class="py-3 px-4 font-bold text-center text-rdmaroon">${escapeHtml(item.personsAttended || '1')}</td>
                     <td class="py-3 px-4 whitespace-pre-line">${escapeHtml(item.attendeeDetails || '')}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">
@@ -3680,7 +3708,8 @@ function doGet(e) {
                 '5. Food Options',
                 '6. Consultancy Requirements',
                 '7. Required Brochure',
-                '8. Number Of Persons Attended',
+                '8. Contact Number for Brochure Printing',
+                '9. Number Of Persons Attended',
                 'Attendee Names & Food Options',
                 'Submitted Timestamp',
                 'Official Account'
@@ -3695,6 +3724,7 @@ function doGet(e) {
                 `"${String(item.foodOptions || '').replace(/"/g, '""')}"`,
                 `"${String(item.consultancyRequirements || '').replace(/"/g, '""')}"`,
                 `"${String(item.requiredBrochure || '').replace(/"/g, '""')}"`,
+                `"${String(item.brochureContactNumber || '').replace(/"/g, '""')}"`,
                 `"${String(item.personsAttended || '').replace(/"/g, '""')}"`,
                 `"${String(item.attendeeDetails || '').replace(/"/g, '""')}"`,
                 `"${String(item.submittedReadable || '')}"`,
@@ -3716,7 +3746,7 @@ function doGet(e) {
             if (!isAdminAuthenticated) return;
             const subject = encodeURIComponent(`RDCCPS Consultancy Meet - Admission 2027-2028 Summary (${allSubmissions.length} Registrations)`);
             const lines = allSubmissions.map((r, i) =>
-                `${i + 1}. ${r.consultancyName} | Consultant: ${r.consultantName} | Ph: ${r.contactNumber} | Food: ${r.foodOptions} | Attendees: ${r.attendeeDetails || 'Not recorded'} | Brochure: ${r.requiredBrochure} | Persons Attended: ${r.personsAttended || '1'} | Req: ${r.consultancyRequirements}`
+                `${i + 1}. ${r.consultancyName} | Consultant: ${r.consultantName} | Ph: ${r.contactNumber} | Food: ${r.foodOptions} | Attendees: ${r.attendeeDetails || 'Not recorded'} | Brochure: ${r.requiredBrochure} | Brochure Printing Contact: ${r.brochureContactNumber || ''} | Persons Attended: ${r.personsAttended || '1'} | Req: ${r.consultancyRequirements}`
             ).join('\n');
 
             const body = encodeURIComponent(

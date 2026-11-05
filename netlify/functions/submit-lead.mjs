@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { ensureLeadSheetSchema, LEAD_SHEET_HEADERS } from "./_shared/lead-sheet-schema.mjs";
 
 const REQUIRED_FIELDS = [
   "consultancyName",
@@ -7,22 +8,8 @@ const REQUIRED_FIELDS = [
   "contactNumber",
   "consultancyRequirements",
   "requiredBrochure",
+  "brochureContactNumber",
   "personsAttended",
-];
-
-const HEADERS = [
-  "Timestamp",
-  "1. Consultancy Name",
-  "2. Consultant Name",
-  "3. Consultancy Address",
-  "4. Contact Number",
-  "5. Food Options",
-  "6. Requirements",
-  "7. Required Brochure",
-  "8. Persons Attended",
-  "Record ID",
-  "9. Attendee Names (one per line)",
-  "10. Attendee Food Options (same order)",
 ];
 
 function json(statusCode, body, origin = "") {
@@ -115,52 +102,8 @@ export async function handler(event) {
     const firstSheet = spreadsheet.data.sheets?.[0]?.properties;
     if (!firstSheet?.title) throw new Error("Spreadsheet does not contain a worksheet.");
 
-    const sheetTitle = firstSheet.title.replace(/'/g, "''");
-    const range = `'${sheetTitle}'!A:L`;
-
-    const existing = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `'${sheetTitle}'!A1:L1`,
-    });
-
-    if (!existing.data.values?.length) {
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: `'${sheetTitle}'!A1:L1`,
-        valueInputOption: "RAW",
-        requestBody: { values: [HEADERS] },
-      });
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [{
-            repeatCell: {
-              range: { sheetId: firstSheet.sheetId, startRowIndex: 0, endRowIndex: 1 },
-              cell: {
-                userEnteredFormat: {
-                  backgroundColor: { red: 0.05, green: 0.16, blue: 0.30 },
-                  textFormat: { foregroundColor: { red: 0.91, green: 0.84, blue: 0.53 }, bold: true },
-                },
-              },
-              fields: "userEnteredFormat(backgroundColor,textFormat)",
-            },
-          }],
-        },
-      });
-    } else {
-      const currentHeaders = existing.data.values[0];
-      for (const columnIndex of [10, 11]) {
-        if (!currentHeaders[columnIndex]) {
-          const column = String.fromCharCode(65 + columnIndex);
-          await sheets.spreadsheets.values.update({
-            spreadsheetId,
-            range: `'${sheetTitle}'!${column}1`,
-            valueInputOption: "RAW",
-            requestBody: { values: [[HEADERS[columnIndex]]] },
-          });
-        }
-      }
-    }
+    const sheetTitle = await ensureLeadSheetSchema(sheets, spreadsheetId, firstSheet);
+    const range = `'${sheetTitle}'!A:M`;
 
     // Avoid appending the same submission ID twice if a client retries.
     const recordId = String(payload.id || "");
@@ -193,6 +136,7 @@ export async function handler(event) {
           foodOptions,
           payload.consultancyRequirements.trim(),
           payload.requiredBrochure.trim(),
+          payload.brochureContactNumber.trim(),
           String(persons),
           recordId,
           attendeeNames,

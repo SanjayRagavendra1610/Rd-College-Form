@@ -38,6 +38,7 @@ Alternatively, push the project to the Git repository connected to the existing 
 ## Response storage and admin access
 
 - Public form submissions are appended by `submit-lead` to the configured Google Sheet. The form shows success only after the Sheets API confirms the write.
+- The required brochure-printing contact number is saved immediately after the required-brochure column. Existing sheets are migrated by inserting the new column while preserving existing response data.
 - The attendance count creates a required name and Veg/Non Veg choice for each attendee. Their names and food choices are written on separate, matching lines in the `Attendee Names` and `Attendee Food Options` columns; existing sheets get these columns added without changing prior response columns.
 - `admin-auth` checks the organizer key on the server and returns a short-lived session token. The key is never embedded in the public page.
 - `admin-leads` uses that token to read, refresh, and delete responses in the same Google Sheet. The admin page refreshes from the sheet every 15 seconds, so submissions from other devices appear without using local browser storage.

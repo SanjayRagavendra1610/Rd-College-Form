@@ -1,3 +1,5 @@
+import { db } from '../../db/index.ts';
+import { registrationFeedback } from '../../db/schema.ts';
 import { google } from "googleapis";
 import { ensureLeadSheetSchema, LEAD_SHEET_HEADERS } from "./_shared/lead-sheet-schema.mjs";
 
@@ -66,6 +68,12 @@ export async function handler(event) {
       }
     }
 
+    if (payload.attendanceConfirmed !== true) {
+      return json(400, { success: false, error: "Please confirm your attendance." }, origin);
+    }
+    if (payload.feedback !== undefined && (typeof payload.feedback !== 'string' || payload.feedback.length > 5000)) {
+      return json(400, { success: false, error: "Feedback must be text of at most 5000 characters." }, origin);
+    }
     const persons = Number(payload.personsAttended);
     if (!Number.isInteger(persons) || persons < 1 || persons > 10000) {
       return json(400, { success: false, error: "Invalid number of persons." }, origin);
@@ -112,9 +120,17 @@ export async function handler(event) {
     }
     const lastRows = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `'${sheetTitle}'!J2:J`,
+      range: `'${sheetTitle}'!K2:K`,
     });
     const alreadyExists = (lastRows.data.values || []).some((row) => String(row[0] || "") === recordId);
+    // Keep the new answers in Netlify Database, keyed to the existing registration.
+    await db.insert(registrationFeedback).values({
+      id: recordId,
+      feedback: (payload.feedback || '').trim(),
+      attendanceConfirmed: true,
+    }).onConflictDoUpdate({ target: registrationFeedback.id, set: {
+      feedback: (payload.feedback || '').trim(), attendanceConfirmed: true,
+    } });
     if (alreadyExists) {
       return json(200, { success: true, duplicate: true }, origin);
     }

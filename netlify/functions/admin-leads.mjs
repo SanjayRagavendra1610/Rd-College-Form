@@ -1,6 +1,3 @@
-import { db } from '../../db/index.ts';
-import { registrationFeedback } from '../../db/schema.ts';
-import { inArray } from 'drizzle-orm';
 import { google } from "googleapis";
 import {
   allowedOrigin,
@@ -106,17 +103,10 @@ export async function handler(event) {
         }));
         await sheets.spreadsheets.batchUpdate({ spreadsheetId, requestBody: { requests } });
       }
-      const deletedIds = values.filter((row, index) => deleteAll || ids.has(String(row[10] || `sheet-row-${index + 2}`))).map((row) => String(row[10] || '')).filter(Boolean);
-      if (deletedIds.length) await db.delete(registrationFeedback).where(inArray(registrationFeedback.id, deletedIds));
       return response(200, { success: true, deletedCount: matchingIndexes.length }, origin || allowedOrigin());
     }
 
-    const answers = await db.select().from(registrationFeedback);
-    const byId = new Map(answers.map((answer) => [answer.id, answer]));
-    const rows = values.map(toEntry).map((entry) => ({ ...entry,
-      feedback: byId.get(entry.id)?.feedback || '',
-      attendanceConfirmed: byId.get(entry.id)?.attendanceConfirmed || false,
-    })).sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
+    const rows = values.map(toEntry).sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
     return response(200, {
       success: true,
       rows,

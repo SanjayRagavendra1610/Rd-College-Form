@@ -325,17 +325,6 @@ y<!DOCTYPE html>
                         </div>
                     </div>
 
-                    <div class="bg-white p-5 rounded-xl border-l-8 border-rdnavy shadow-sm ring-1 ring-rdnavy/10">
-                        <label for="feedback" class="block text-sm sm:text-base font-bold text-rdnavy mb-2">Feedback <span class="text-xs font-normal">(optional)</span></label>
-                        <textarea id="feedback" name="feedback" rows="4" maxlength="5000" placeholder="Share your feedback or suggestions for the consultancy meet" class="rd-input w-full rounded-lg px-4 py-3 text-sm sm:text-base font-medium"></textarea>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl border-l-8 border-rdmaroon shadow-sm ring-1 ring-rdnavy/10">
-                        <label for="attendanceConfirmed" class="flex items-start gap-3 text-sm sm:text-base font-bold text-rdnavy cursor-pointer">
-                            <input type="checkbox" id="attendanceConfirmed" name="attendanceConfirmed" required class="mt-1 h-5 w-5 accent-rdmaroon shrink-0">
-                            <span>I confirm that our consultancy will attend the consultancy meet with the attendees listed above. <span class="text-rdmaroon">*</span></span>
-                        </label>
-                    </div>
-
                     <!-- Direct Email Copy Option for rdccpscollege@gmail.com -->
                     <div class="bg-rdnavy/5 rounded-xl p-4 border border-rdnavy/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div class="space-y-1">
@@ -1172,11 +1161,10 @@ function doGet(e) {
                 const rawDraft = localStorage.getItem(STORAGE_FORM_DRAFT_KEY);
                 if (rawDraft) {
                     const draft = JSON.parse(rawDraft);
-                    ['consultancyName', 'consultantName', 'consultancyAddress', 'contactNumber', 'consultancyRequirements', 'requiredBrochure', 'brochureContactNumber', 'personsAttended', 'feedback'].forEach(fieldId => {
+                    ['consultancyName', 'consultantName', 'consultancyAddress', 'contactNumber', 'consultancyRequirements', 'requiredBrochure', 'brochureContactNumber', 'personsAttended'].forEach(fieldId => {
                         const el = document.getElementById(fieldId);
                         if (el && draft[fieldId]) el.value = draft[fieldId];
                     });
-                    document.getElementById('attendanceConfirmed').checked = draft.attendanceConfirmed === true;
                     const count = Number(document.getElementById('personsAttended').value);
                     const legacyFood = Array.isArray(draft.foodOptions) ? draft.foodOptions[0] || '' : '';
                     const attendees = Array.isArray(draft.attendees)
@@ -1201,8 +1189,6 @@ function doGet(e) {
                         requiredBrochure: document.getElementById('requiredBrochure')?.value || '',
                         brochureContactNumber: document.getElementById('brochureContactNumber')?.value || '',
                         personsAttended: document.getElementById('personsAttended')?.value || '',
-                        feedback: document.getElementById('feedback').value,
-                        attendanceConfirmed: document.getElementById('attendanceConfirmed').checked,
                         attendees: getAttendeeEntries(),
                         updatedAt: new Date().toISOString()
                     };
@@ -1236,8 +1222,6 @@ function doGet(e) {
                 '7_Required_Brochure': entry.requiredBrochure,
                 '8_Brochure_Printing_Contact': entry.brochureContactNumber,
                 '9_Persons_Attended': entry.personsAttended,
-                'Feedback': entry.feedback || '',
-                'Attendance_Confirmation': entry.attendanceConfirmed ? 'Confirmed' : 'Not recorded',
                 'Submitted_Time': entry.submittedReadable
             };
             for (const url of endpoints) {
@@ -3319,9 +3303,6 @@ function doGet(e) {
             const requiredBrochure = document.getElementById('requiredBrochure').value.trim();
             const brochureContactNumber = document.getElementById('brochureContactNumber').value.trim();
             const personsAttended = document.getElementById('personsAttended').value.trim();
-            const feedback = document.getElementById('feedback').value.trim();
-            const attendanceConfirmed = document.getElementById('attendanceConfirmed').checked;
-            if (!attendanceConfirmed) { showFeedback('Please confirm your attendance before submitting.', true); return; }
             const attendees = getAttendeeEntries();
             if (attendees.length !== Number(personsAttended) || attendees.some((attendee) => !attendee.name || !['Veg', 'Non Veg'].includes(attendee.food))) {
                 showFeedback('Enter a name and food option for every attendee.', true);
@@ -3345,8 +3326,6 @@ function doGet(e) {
                 requiredBrochure,
                 brochureContactNumber,
                 personsAttended,
-                feedback,
-                attendanceConfirmed,
                 attendees,
                 attendeeDetails: attendees.map((attendee, index) => `${index + 1}. ${attendee.name} - ${attendee.food}`).join('\n'),
                 targetAccount: 'rdccpscollege@gmail.com',
@@ -3419,8 +3398,6 @@ function doGet(e) {
                 <div><strong>7. Required Brochure:</strong> ${escapeHtml(record.requiredBrochure)}</div>
                 <div><strong>8. Contact Number for Brochure Printing:</strong> ${escapeHtml(record.brochureContactNumber)}</div>
                 <div><strong>9. Number Of Persons Attended:</strong> ${escapeHtml(record.personsAttended)}</div>
-                <div class="whitespace-pre-line"><strong>Feedback:</strong> ${escapeHtml(record.feedback || 'No feedback provided')}</div>
-                <div><strong>Attendance confirmation:</strong> ${record.attendanceConfirmed ? 'Confirmed' : 'Not recorded'}</div>
                 <div><strong>Attendees:</strong><br>${escapeHtml(record.attendeeDetails).replace(/\n/g, '<br>')}</div>
             `;
 
@@ -3465,8 +3442,6 @@ function doGet(e) {
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
                 `8. Contact Number for Brochure Printing: ${r.brochureContactNumber}\n` +
                 `9. Number Of Persons attended this Event from your consultancy: ${r.personsAttended}\n` +
-                `Feedback: ${r.feedback || 'No feedback provided'}\n` +
-                `Attendance confirmation: ${r.attendanceConfirmed ? 'Confirmed' : 'Not recorded'}\n` +
                 `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `------------------------------------------------------\n` +
                 `Submitted On: ${r.submittedReadable}\n` +
@@ -3489,8 +3464,6 @@ function doGet(e) {
                 `7. Required Brochure: ${r.requiredBrochure}\n` +
                 `8. Contact Number for Brochure Printing: ${r.brochureContactNumber}\n` +
                 `9. Number Of Persons attended: ${r.personsAttended}\n` +
-                `Feedback: ${r.feedback || 'No feedback provided'}\n` +
-                `Attendance confirmation: ${r.attendanceConfirmed ? 'Confirmed' : 'Not recorded'}\n` +
                 `Attendee Names & Food Options:\n${r.attendeeDetails}\n` +
                 `Submitted On: ${r.submittedReadable}`
             );
@@ -3592,7 +3565,7 @@ function doGet(e) {
                     <td class="py-3 px-4 font-medium">${escapeHtml(item.requiredBrochure)}</td>
                     <td class="py-3 px-4 font-semibold whitespace-nowrap">${escapeHtml(item.brochureContactNumber || '')}</td>
                     <td class="py-3 px-4 font-bold text-center text-rdmaroon">${escapeHtml(item.personsAttended || '1')}</td>
-                    <td class="py-3 px-4 whitespace-pre-line">${escapeHtml(item.attendeeDetails || '')}<div class="mt-2"><strong>Attendance:</strong> ${item.attendanceConfirmed ? 'Confirmed' : 'Not recorded'}</div><div><strong>Feedback:</strong> ${escapeHtml(item.feedback || 'No feedback provided')}</div></td>
+                    <td class="py-3 px-4 whitespace-pre-line">${escapeHtml(item.attendeeDetails || '')}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">
                         <button type="button" onclick="deleteSubmission('${escapeHtml(item.id)}')" title="Delete This Received Form" class="px-3 py-1.5 rounded-lg bg-rdmaroon text-rdgold border border-rdgold hover:opacity-90 text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm">
                             <i class="fa-solid fa-trash-can"></i>
@@ -3743,8 +3716,6 @@ function doGet(e) {
                 '8. Contact Number for Brochure Printing',
                 '9. Number Of Persons Attended',
                 'Attendee Names & Food Options',
-                'Feedback',
-                'Attendance Confirmation',
                 'Submitted Timestamp',
                 'Official Account'
             ];
@@ -3761,8 +3732,6 @@ function doGet(e) {
                 `"${String(item.brochureContactNumber || '').replace(/"/g, '""')}"`,
                 `"${String(item.personsAttended || '').replace(/"/g, '""')}"`,
                 `"${String(item.attendeeDetails || '').replace(/"/g, '""')}"`,
-                `"${String(item.feedback || '').replace(/"/g, '""')}"`,
-                `"${item.attendanceConfirmed ? 'Confirmed' : 'Not recorded'}"`,
                 `"${String(item.submittedReadable || '')}"`,
                 `"rdccpscollege@gmail.com"`
             ]);
